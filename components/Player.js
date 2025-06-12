@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Image } from 'react-native';
+import React, { useEffect, useState } from "react";
+import { Image } from "react-native";
 
 const frameCount = 4; // change based on how many frames you have
 const frameInterval = 100; // milliseconds
@@ -15,17 +15,33 @@ export default function Player({ position, size }) {
   }, []);
 
   const frameImages = [
-    require('../assets/images/Top_Down_Survivor/shotgun/idle/survivor-idle_shotgun_0.png'),
-    require('../assets/images/player/frame_2.png'),
-    require('../assets/images/player/frame_3.png'),
-    require('../assets/images/player/frame_4.png'),
+    require("../assets/images/Top_Down_Survivor/shotgun/idle/survivor-idle_shotgun_0.png"),
+    require("../assets/images/Top_Down_Survivor/shotgun/idle/survivor-idle_shotgun_1.png"),
+    require("../assets/images/Top_Down_Survivor/shotgun/idle/survivor-idle_shotgun_2.png"),
+    require("../assets/images/Top_Down_Survivor/shotgun/idle/survivor-idle_shotgun_3.png"),
+    require("../assets/images/Top_Down_Survivor/shotgun/idle/survivor-idle_shotgun_4.png"),
+    require("../assets/images/Top_Down_Survivor/shotgun/idle/survivor-idle_shotgun_5.png"),
+    require("../assets/images/Top_Down_Survivor/shotgun/idle/survivor-idle_shotgun_6.png"),
+    require("../assets/images/Top_Down_Survivor/shotgun/idle/survivor-idle_shotgun_7.png"),
+    require("../assets/images/Top_Down_Survivor/shotgun/idle/survivor-idle_shotgun_8.png"),
+    require("../assets/images/Top_Down_Survivor/shotgun/idle/survivor-idle_shotgun_9.png"),
+    require("../assets/images/Top_Down_Survivor/shotgun/idle/survivor-idle_shotgun_10.png"),
+    require("../assets/images/Top_Down_Survivor/shotgun/idle/survivor-idle_shotgun_11.png"),
+    require("../assets/images/Top_Down_Survivor/shotgun/idle/survivor-idle_shotgun_12.png"),
+    require("../assets/images/Top_Down_Survivor/shotgun/idle/survivor-idle_shotgun_13.png"),
+    require("../assets/images/Top_Down_Survivor/shotgun/idle/survivor-idle_shotgun_14.png"),
+    require("../assets/images/Top_Down_Survivor/shotgun/idle/survivor-idle_shotgun_15.png"),
+    require("../assets/images/Top_Down_Survivor/shotgun/idle/survivor-idle_shotgun_16.png"),
+    require("../assets/images/Top_Down_Survivor/shotgun/idle/survivor-idle_shotgun_17.png"),
+    require("../assets/images/Top_Down_Survivor/shotgun/idle/survivor-idle_shotgun_18.png"),
+    require("../assets/images/Top_Down_Survivor/shotgun/idle/survivor-idle_shotgun_19.png"),
   ];
 
   return (
     <Image
       source={frameImages[frameIndex]}
       style={{
-        position: 'absolute',
+        position: "absolute",
         width: size.width,
         height: size.height,
         left: position.x,
