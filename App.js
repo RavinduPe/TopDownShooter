@@ -18,6 +18,7 @@ export default function App() {
   const [enemies, setEnemies] = useState([]);
   const [score, setScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
+  const [moveInterval, setMoveInterval] = useState(null);
 
   const restartGame = () => {
     setPosition({ x: 150, y: 500 });
@@ -35,21 +36,31 @@ export default function App() {
     }));
   };
 
+  const startMoving = (dx, dy) => {
+    if (moveInterval) return;
+    const interval = setInterval(() => {
+      movePlayer(dx, dy);
+    }, 50);
+    setMoveInterval(interval);
+  };
+
+  const stopMoving = () => {
+    if (moveInterval) {
+      clearInterval(moveInterval);
+      setMoveInterval(null);
+    }
+  };
+
   const fireBullet = () => {
     if (gameOver) return;
     setBullets((prev) => [
       ...prev,
-      { id: Date.now(), x: position.x + 29, y: position.y },
+      { id: Date.now(), x: position.x + 45, y: position.y },
     ]);
   };
 
   const isColliding = (a, b) => {
-    return (
-      a.x < b.x + 50 &&
-      a.x + 6 > b.x &&
-      a.y < b.y + 50 &&
-      a.y + 12 > b.y
-    );
+    return a.x < b.x + 50 && a.x + 6 > b.x && a.y < b.y + 50 && a.y + 12 > b.y;
   };
 
   useEffect(() => {
@@ -103,10 +114,7 @@ export default function App() {
 
     const spawnInterval = setInterval(() => {
       const x = Math.floor(Math.random() * (screenWidth - 50));
-      setEnemies((prev) => [
-        ...prev,
-        { id: Date.now(), x, y: -50 },
-      ]);
+      setEnemies((prev) => [...prev, { id: Date.now(), x, y: -50 }]);
     }, 2000);
 
     return () => clearInterval(spawnInterval);
@@ -136,7 +144,8 @@ export default function App() {
       <View style={styles.controls}>
         <View style={styles.row}>
           <TouchableOpacity
-            onPress={() => movePlayer(0, -10)}
+            onPressIn={() => startMoving(0, -10)}
+            onPressOut={stopMoving}
             style={styles.button}
           >
             <Text style={styles.text}>↑</Text>
@@ -144,13 +153,15 @@ export default function App() {
         </View>
         <View style={styles.row}>
           <TouchableOpacity
-            onPress={() => movePlayer(-10, 0)}
+            onPressIn={() => startMoving(-10, 0)}
+            onPressOut={stopMoving}
             style={styles.button}
           >
             <Text style={styles.text}>←</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => movePlayer(10, 0)}
+            onPressIn={() => startMoving(10, 0)}
+            onPressOut={stopMoving}
             style={styles.button}
           >
             <Text style={styles.text}>→</Text>
@@ -158,7 +169,8 @@ export default function App() {
         </View>
         <View style={styles.row}>
           <TouchableOpacity
-            onPress={() => movePlayer(0, 10)}
+            onPressIn={() => startMoving(0, 10)}
+            onPressOut={stopMoving}
             style={styles.button}
           >
             <Text style={styles.text}>↓</Text>
@@ -176,19 +188,23 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#000" },
   controls: {
     position: "absolute",
-    bottom: 40,
+    bottom: 20,
     alignSelf: "center",
     alignItems: "center",
   },
-  row: { flexDirection: "row", marginVertical: 5 },
+  row: { flexDirection:"row", marginVertical: 2 },
   button: {
     backgroundColor: "#444",
     borderRadius: 8,
     padding: 15,
-    marginHorizontal: 10,
+    marginHorizontal: 50,
   },
   text: { color: "#fff", fontSize: 24 },
   fireButton: {
+    position: "absolute",
+    bottom: 78,
+    left: "60.5%",
+    transform: [{ translateX: -75 }],
     marginTop: 15,
     backgroundColor: "#e63946",
     paddingVertical: 12,

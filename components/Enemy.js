@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Image, StyleSheet } from "react-native";
 
 
-const frameCount = 4; // change based on how many frames you have
+const frameCount = 9; // change based on how many frames you have
 const frameInterval = 100; // milliseconds
   
   export default function Player({ position }) {
@@ -25,6 +25,14 @@ const frameInterval = 100; // milliseconds
       require("../assets/images/tds_zombie/skeleton-move_7.png"),
       require("../assets/images/tds_zombie/skeleton-move_8.png"),
       require("../assets/images/tds_zombie/skeleton-move_9.png"),
+      require("../assets/images/tds_zombie/skeleton-move_10.png"),
+      require("../assets/images/tds_zombie/skeleton-move_11.png"),
+      require("../assets/images/tds_zombie/skeleton-move_12.png"),
+      require("../assets/images/tds_zombie/skeleton-move_13.png"),
+      require("../assets/images/tds_zombie/skeleton-move_14.png"),
+      require("../assets/images/tds_zombie/skeleton-move_15.png"),
+      require("../assets/images/tds_zombie/skeleton-move_16.png"),
+      
     ];
   return (
     <Image
