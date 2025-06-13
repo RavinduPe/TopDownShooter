@@ -13,7 +13,7 @@ import Enemy from "./components/Enemy";
 const screenWidth = Dimensions.get("window").width;
 
 export default function App() {
-  const [position, setPosition] = useState({ x: 150, y: 300 });
+  const [position, setPosition] = useState({ x: 180, y: 550 });
   const [bullets, setBullets] = useState([]);
   const [enemies, setEnemies] = useState([]);
   const [score, setScore] = useState(0);
@@ -23,7 +23,7 @@ export default function App() {
   const [flag, setFlag] = useState(1);
 
   const restartGame = () => {
-    setPosition({ x: 150, y: 500 });
+    setPosition({ x: 180, y: 550 });
     setBullets([]);
     setEnemies([]);
     setScore(0);
