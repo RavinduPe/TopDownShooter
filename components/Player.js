@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Image } from "react-native";
 
-const frameCount = 4; // change based on how many frames you have
+const frameCount = 19; //  frames you have
 const frameInterval = 100; // milliseconds
 
 export default function Player({ position, size }) {

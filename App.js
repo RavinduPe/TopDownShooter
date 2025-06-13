@@ -20,7 +20,7 @@ export default function App() {
   const [gameOver, setGameOver] = useState(false);
 
   const restartGame = () => {
-    setPosition({ x: 150, y: 300 });
+    setPosition({ x: 150, y: 500 });
     setBullets([]);
     setEnemies([]);
     setScore(0);
