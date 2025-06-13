@@ -19,6 +19,8 @@ export default function App() {
   const [score, setScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [moveInterval, setMoveInterval] = useState(null);
+  const [pause, setpause] = useState(null);
+  const [flag, setFlag] = useState(1);
 
   const restartGame = () => {
     setPosition({ x: 150, y: 500 });
@@ -29,7 +31,7 @@ export default function App() {
   };
 
   const movePlayer = (dx, dy) => {
-    if (gameOver) return;
+    if (gameOver || pause) return;
     setPosition((prev) => ({
       x: Math.min(Math.max(prev.x + dx, 0), screenWidth - 64),
       y: Math.min(Math.max(prev.y + dy, 0), 700),
@@ -52,7 +54,7 @@ export default function App() {
   };
 
   const fireBullet = () => {
-    if (gameOver) return;
+    if (gameOver || pause) return;
     setBullets((prev) => [
       ...prev,
       { id: Date.now(), x: position.x + 45, y: position.y },
@@ -65,7 +67,7 @@ export default function App() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (gameOver) return;
+      if (gameOver|| pause) return;
 
       const movedBullets = bullets
         .map((b) => ({ ...b, y: b.y - 10 }))
@@ -104,13 +106,13 @@ export default function App() {
 
       setBullets(remainingBullets);
       setEnemies(remainingEnemies);
-    }, 50);
+    }, 30);
 
     return () => clearInterval(interval);
   }, [bullets, enemies, gameOver]);
 
   useEffect(() => {
-    if (gameOver) return;
+    if (gameOver || pause) return;
 
     const spawnInterval = setInterval(() => {
       const x = Math.floor(Math.random() * (screenWidth - 50));
@@ -118,16 +120,19 @@ export default function App() {
     }, 2000);
 
     return () => clearInterval(spawnInterval);
-  }, [gameOver]);
+  }, [gameOver,pause]);
 
   return (
     <View style={styles.container}>
       <Text style={styles.score}>Score: {score}</Text>
+      <TouchableOpacity style={styles.pauseButton } onPress={()=>{setpause(!pause);setFlag(pause ? 1 : 0)}}>
+        <Text style={styles.pauseText}>{pause ? "▶" : "II"}</Text>
+      </TouchableOpacity>
 
       {enemies.map((enemy) => (
-        <Enemy key={enemy.id} position={{ x: enemy.x, y: enemy.y }} />
+        <Enemy key={enemy.id} position={{ x: enemy.x, y: enemy.y }} flag={flag}/>
       ))}
-      <Player position={position} size={{ width: 64, height: 64 }} />
+      <Player position={position} size={{ width: 64, height: 64 }} flag={flag}/>
       {bullets.map((b) => (
         <Bullet key={b.id} position={{ x: b.x, y: b.y }} />
       ))}
@@ -249,6 +254,20 @@ const styles = StyleSheet.create({
   },
   restartText: {
     color: "#000",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+
+  pauseButton: {
+    position: "absolute",
+    top: 50,
+    right: 20,
+    backgroundColor: "#444",
+    padding: 10,
+    borderRadius: 8,
+  },
+  pauseText: {
+    color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
   },

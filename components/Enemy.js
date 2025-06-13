@@ -2,10 +2,10 @@ import React, { useEffect, useState } from "react";
 import { Image, StyleSheet } from "react-native";
 
 
-const frameCount = 9; // change based on how many frames you have
+const frameCount = 9; //  how many frames you have
 const frameInterval = 100; // milliseconds
   
-  export default function Player({ position }) {
+  export default function Player({ position,flag}) {
     const [frameIndex, setFrameIndex] = useState(0);
     useEffect(() => {
       const interval = setInterval(() => {
@@ -34,15 +34,24 @@ const frameInterval = 100; // milliseconds
       require("../assets/images/tds_zombie/skeleton-move_16.png"),
       
     ];
-  return (
-    <Image
-      source={frameImages[frameIndex]}
-      style={[
-        styles.enemy,
-        { left: position.x, top: position.y },
-      ]}
-    />
-  );
+
+    if(flag === 0) {
+      return (<Image
+        source={frameImages[0]}
+        style={[
+          styles.enemy,
+          { left: position.x, top: position.y },
+        ]}
+      />)
+    } else if(flag === 1) {
+      return (<Image
+        source={frameImages[frameIndex]}
+        style={[
+          styles.enemy,
+          { left: position.x, top: position.y },
+        ]}
+      />)
+    } 
 }
 
 const styles = StyleSheet.create({

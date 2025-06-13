@@ -4,7 +4,7 @@ import { Image } from "react-native";
 const frameCount = 19; //  frames you have
 const frameInterval = 100; // milliseconds
 
-export default function Player({ position, size }) {
+export default function Player({ position, size ,flag}) {
   const [frameIndex, setFrameIndex] = useState(0);
 
   useEffect(() => {
@@ -36,17 +36,32 @@ export default function Player({ position, size }) {
     require("../assets/images/Top_Down_Survivor/shotgun/idle/survivor-idle_shotgun_18.png"),
     require("../assets/images/Top_Down_Survivor/shotgun/idle/survivor-idle_shotgun_19.png"),
   ];
-
-  return (
-    <Image
-      source={frameImages[frameIndex]}
-      style={{
-        position: "absolute",
-        width: size.width,
-        height: size.height,
-        left: position.x,
-        top: position.y,
-      }}
-    />
-  );
+if(flag === 0) {
+    return (
+      <Image
+        source={frameImages[0]}
+        style={{
+          position: "absolute",
+          width: size.width,
+          height: size.height,
+          left: position.x,
+          top: position.y,
+        }}
+      />
+    );
+  }else if(flag === 1) {
+    // If flag is 1, animate the player
+    return (
+      <Image
+        source={frameImages[frameIndex]}
+        style={{
+          position: "absolute",
+          width: size.width,
+          height: size.height,
+          left: position.x,
+          top: position.y,
+        }}
+      />
+    );
+  }
 }
