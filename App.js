@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   StyleSheet,
@@ -9,6 +9,8 @@ import {
 import Player from "./components/Player";
 import Bullet from "./components/Bullet";
 import Enemy from "./components/Enemy";
+import { Audio } from 'expo-av'; 
+
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -21,8 +23,58 @@ export default function App() {
   const [moveInterval, setMoveInterval] = useState(null);
   const [pause, setpause] = useState(null);
   const [flag, setFlag] = useState(1);
-
   const [showStartScreen, setShowStartScreen] = useState(true);
+
+
+  const shootSound = useRef();
+  const hitSound = useRef();
+  const gameOverSound = useRef();
+
+  useEffect(() => {
+    const loadSounds = async () => {
+      const shoot = await Audio.Sound.createAsync(
+        require("./assets/sounds/shoot-sound.wav")
+      );
+      shootSound.current = shoot.sound;
+
+      const hit = await Audio.Sound.createAsync(
+        require("./assets/sounds/hit-sound.wav")
+      );
+      hitSound.current = hit.sound;
+
+      const gameOverS = await Audio.Sound.createAsync(
+        require("./assets/sounds/game-over.wav")
+      );
+      gameOverSound.current = gameOverS.sound;
+    };
+
+    loadSounds();
+
+    return () => {
+      shootSound.current?.unloadAsync();
+      hitSound.current?.unloadAsync();
+      gameOverSound.current?.unloadAsync();
+    };
+  }, []);
+
+  const playShootSound = async () => {
+    try {
+      await shootSound.current?.replayAsync();
+    } catch (e) {
+      console.warn("Shoot sound failed:", e);
+    }
+  };
+
+  const playHitSound = async () => {
+    await hitSound.current?.replayAsync();
+  };
+
+  const playGameOverSound = async () => {
+    await gameOverSound.current?.replayAsync();
+  };
+
+
+
 
   const restartGame = () => {
     setPosition({ x: 180, y: 550 });
@@ -56,8 +108,10 @@ export default function App() {
     }
   };
 
+
   const fireBullet = () => {
     if (gameOver || pause || showStartScreen) return;
+
     setBullets((prev) => [
       ...prev,
       { id: Date.now(), x: position.x + 45, y: position.y },
@@ -70,7 +124,9 @@ export default function App() {
 
   useEffect(() => {
     const interval = setInterval(() => {
+
       if (gameOver || pause || showStartScreen) return;
+
 
       const movedBullets = bullets
         .map((b) => ({ ...b, y: b.y - 10 }))
@@ -79,6 +135,7 @@ export default function App() {
       const movedEnemies = enemies.map((e) => {
         const newY = e.y + 5;
         if (newY >= 700) {
+          playGameOverSound();
           setGameOver(true);
         }
         return { ...e, y: newY };
@@ -101,6 +158,7 @@ export default function App() {
           remainingBullets.push(bullet);
         } else {
           remainingEnemies.splice(hitIndex, 1);
+          playHitSound();
           hits++;
         }
       });
@@ -123,6 +181,7 @@ export default function App() {
     }, 2000);
 
     return () => clearInterval(spawnInterval);
+
   }, [gameOver, pause, showStartScreen]);
 
   return (
