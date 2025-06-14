@@ -22,16 +22,19 @@ export default function App() {
   const [pause, setpause] = useState(null);
   const [flag, setFlag] = useState(1);
 
+  const [showStartScreen, setShowStartScreen] = useState(true);
+
   const restartGame = () => {
     setPosition({ x: 180, y: 550 });
     setBullets([]);
     setEnemies([]);
     setScore(0);
     setGameOver(false);
+    setShowStartScreen(true);
   };
 
   const movePlayer = (dx, dy) => {
-    if (gameOver || pause) return;
+    if (gameOver || pause || showStartScreen) return;
     setPosition((prev) => ({
       x: Math.min(Math.max(prev.x + dx, 0), screenWidth - 64),
       y: Math.min(Math.max(prev.y + dy, 0), 700),
@@ -54,7 +57,7 @@ export default function App() {
   };
 
   const fireBullet = () => {
-    if (gameOver || pause) return;
+    if (gameOver || pause || showStartScreen) return;
     setBullets((prev) => [
       ...prev,
       { id: Date.now(), x: position.x + 45, y: position.y },
@@ -67,7 +70,7 @@ export default function App() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (gameOver|| pause) return;
+      if (gameOver || pause || showStartScreen) return;
 
       const movedBullets = bullets
         .map((b) => ({ ...b, y: b.y - 10 }))
@@ -112,7 +115,7 @@ export default function App() {
   }, [bullets, enemies, gameOver]);
 
   useEffect(() => {
-    if (gameOver || pause) return;
+    if (gameOver || pause || showStartScreen) return;
 
     const spawnInterval = setInterval(() => {
       const x = Math.floor(Math.random() * (screenWidth - 50));
@@ -120,71 +123,104 @@ export default function App() {
     }, 2000);
 
     return () => clearInterval(spawnInterval);
-  }, [gameOver,pause]);
+  }, [gameOver, pause, showStartScreen]);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.score}>Score: {score}</Text>
-      <TouchableOpacity style={styles.pauseButton } onPress={()=>{setpause(!pause);setFlag(pause ? 1 : 0)}}>
-        <Text style={styles.pauseText}>{pause ? "▶" : "II"}</Text>
-      </TouchableOpacity>
-
-      {enemies.map((enemy) => (
-        <Enemy key={enemy.id} position={{ x: enemy.x, y: enemy.y }} flag={flag}/>
-      ))}
-      <Player position={position} size={{ width: 64, height: 64 }} flag={flag}/>
-      {bullets.map((b) => (
-        <Bullet key={b.id} position={{ x: b.x, y: b.y }} />
-      ))}
-
-      {gameOver && (
-        <View style={styles.gameOverOverlay}>
-          <Text style={styles.gameOverText}>Game Over</Text>
-          <TouchableOpacity style={styles.restartButton} onPress={restartGame}>
-            <Text style={styles.restartText}>Restart</Text>
+      {showStartScreen && (
+        <View style={styles.startScreen}>
+          <Text style={styles.startTitle}>Top Down Shooter</Text>
+          <TouchableOpacity
+            style={styles.startButton}
+            onPress={() => setShowStartScreen(false)}
+          >
+            <Text style={styles.startButtonText}>START GAME</Text>
           </TouchableOpacity>
         </View>
       )}
 
-      <View style={styles.controls}>
-        <View style={styles.row}>
+      {!showStartScreen && (
+        <>
+          <Text style={styles.score}>Score: {score}</Text>
           <TouchableOpacity
-            onPressIn={() => startMoving(0, -10)}
-            onPressOut={stopMoving}
-            style={styles.button}
+            style={styles.pauseButton}
+            onPress={() => {
+              setpause(!pause);
+              setFlag(pause ? 1 : 0);
+            }}
           >
-            <Text style={styles.text}>↑</Text>
+            <Text style={styles.pauseText}>{pause ? "▶" : "II"}</Text>
           </TouchableOpacity>
-        </View>
-        <View style={styles.row}>
-          <TouchableOpacity
-            onPressIn={() => startMoving(-10, 0)}
-            onPressOut={stopMoving}
-            style={styles.button}
-          >
-            <Text style={styles.text}>←</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPressIn={() => startMoving(10, 0)}
-            onPressOut={stopMoving}
-            style={styles.button}
-          >
-            <Text style={styles.text}>→</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.row}>
-          <TouchableOpacity
-            onPressIn={() => startMoving(0, 10)}
-            onPressOut={stopMoving}
-            style={styles.button}
-          >
-            <Text style={styles.text}>↓</Text>
-          </TouchableOpacity>
-        </View>
-        <TouchableOpacity onPress={fireBullet} style={styles.fireButton}>
-          <Text style={styles.fireText}>FIRE</Text>
-        </TouchableOpacity>
-      </View>
+
+          {enemies.map((enemy) => (
+            <Enemy
+              key={enemy.id}
+              position={{ x: enemy.x, y: enemy.y }}
+              flag={flag}
+            />
+          ))}
+          <Player
+            position={position}
+            size={{ width: 64, height: 64 }}
+            flag={flag}
+          />
+          {bullets.map((b) => (
+            <Bullet key={b.id} position={{ x: b.x, y: b.y }} />
+          ))}
+
+          {gameOver && (
+            <View style={styles.gameOverOverlay}>
+              <Text style={styles.gameOverText}>Game Over</Text>
+              <TouchableOpacity
+                style={styles.restartButton}
+                onPress={restartGame}
+              >
+                <Text style={styles.restartText}>Restart</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          <View style={styles.controls}>
+            <View style={styles.row}>
+              <TouchableOpacity
+                onPressIn={() => startMoving(0, -10)}
+                onPressOut={stopMoving}
+                style={styles.button}
+              >
+                <Text style={styles.text}>↑</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.row}>
+              <TouchableOpacity
+                onPressIn={() => startMoving(-10, 0)}
+                onPressOut={stopMoving}
+                style={styles.button}
+              >
+                <Text style={styles.text}>←</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPressIn={() => startMoving(10, 0)}
+                onPressOut={stopMoving}
+                style={styles.button}
+              >
+                <Text style={styles.text}>→</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.row}>
+              <TouchableOpacity
+                onPressIn={() => startMoving(0, 10)}
+                onPressOut={stopMoving}
+                style={styles.button}
+              >
+                <Text style={styles.text}>↓</Text>
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity onPress={fireBullet} style={styles.fireButton}>
+              <Text style={styles.fireText}>FIRE</Text>
+            </TouchableOpacity>
+          </View>
+        </>
+      )}
     </View>
   );
 }
@@ -197,7 +233,7 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     alignItems: "center",
   },
-  row: { flexDirection:"row", marginVertical: 2 },
+  row: { flexDirection: "row", marginVertical: 2 },
   button: {
     backgroundColor: "#444",
     borderRadius: 8,
@@ -270,5 +306,45 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
+  },
+  startScreen: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "#000",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 10,
+  },
+  startTitle: {
+    fontSize: 36,
+    fontWeight: "bold",
+    color: "#fff",
+    marginBottom: 40,
+  },
+  startButton: {
+    backgroundColor: "#1abc9c",
+    paddingVertical: 15,
+    paddingHorizontal: 40,
+    borderRadius: 10,
+  },
+  startButtonText: {
+    fontSize: 20,
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  pauseButton: {
+    position: "absolute",
+    top: 50,
+    right: 20,
+    backgroundColor: "#555",
+    padding: 10,
+    borderRadius: 10,
+  },
+  pauseText: {
+    color: "#fff",
+    fontSize: 16,
   },
 });
