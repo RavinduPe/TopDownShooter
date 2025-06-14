@@ -274,7 +274,7 @@ export default function App() {
                 <Text style={styles.text}>↓</Text>
               </TouchableOpacity>
             </View>
-            <TouchableOpacity onPress={fireBullet} style={styles.fireButton}>
+            <TouchableOpacity onPress={()=>{fireBullet();playShootSound();}} style={styles.fireButton}>
               <Text style={styles.fireText}>FIRE</Text>
             </TouchableOpacity>
           </View>
