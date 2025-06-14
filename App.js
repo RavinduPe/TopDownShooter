@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   StyleSheet,
@@ -9,6 +9,8 @@ import {
 import Player from "./components/Player";
 import Bullet from "./components/Bullet";
 import Enemy from "./components/Enemy";
+import { Audio } from 'expo-av'; 
+
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -21,6 +23,53 @@ export default function App() {
   const [moveInterval, setMoveInterval] = useState(null);
   const [pause, setpause] = useState(null);
   const [flag, setFlag] = useState(1);
+
+  const shootSound = useRef();
+  const hitSound = useRef();
+  const gameOverSound = useRef();
+
+  useEffect(() => {
+    const loadSounds = async () => {
+      const shoot = await Audio.Sound.createAsync(
+        require("./assets/sounds/shoot-sound.wav")
+      );
+      shootSound.current = shoot.sound;
+
+      const hit = await Audio.Sound.createAsync(
+        require("./assets/sounds/hit-sound.wav")
+      );
+      hitSound.current = hit.sound;
+
+      const gameOverS = await Audio.Sound.createAsync(
+        require("./assets/sounds/game-over.wav")
+      );
+      gameOverSound.current = gameOverS.sound;
+    };
+
+    loadSounds();
+
+    return () => {
+      shootSound.current?.unloadAsync();
+      hitSound.current?.unloadAsync();
+      gameOverSound.current?.unloadAsync();
+    };
+  }, []);
+
+  const playShootSound = async () => {
+    try {
+      await shootSound.current?.replayAsync();
+    } catch (e) {
+      console.warn("Shoot sound failed:", e);
+    }
+  };
+
+  const playHitSound = async () => {
+    await hitSound.current?.replayAsync();
+  };
+
+  const playGameOverSound = async () => {
+    await gameOverSound.current?.replayAsync();
+  };
 
   const restartGame = () => {
     setPosition({ x: 180, y: 550 });
@@ -53,7 +102,7 @@ export default function App() {
     }
   };
 
-  const fireBullet = () => {
+  const fireBullet = async () => {
     if (gameOver || pause) return;
     setBullets((prev) => [
       ...prev,
@@ -67,7 +116,7 @@ export default function App() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (gameOver|| pause) return;
+      if (gameOver || pause) return;
 
       const movedBullets = bullets
         .map((b) => ({ ...b, y: b.y - 10 }))
@@ -76,6 +125,7 @@ export default function App() {
       const movedEnemies = enemies.map((e) => {
         const newY = e.y + 5;
         if (newY >= 700) {
+          playGameOverSound();
           setGameOver(true);
         }
         return { ...e, y: newY };
@@ -98,6 +148,7 @@ export default function App() {
           remainingBullets.push(bullet);
         } else {
           remainingEnemies.splice(hitIndex, 1);
+          playHitSound();
           hits++;
         }
       });
@@ -120,19 +171,33 @@ export default function App() {
     }, 2000);
 
     return () => clearInterval(spawnInterval);
-  }, [gameOver,pause]);
+  }, [gameOver, pause]);
 
   return (
     <View style={styles.container}>
       <Text style={styles.score}>Score: {score}</Text>
-      <TouchableOpacity style={styles.pauseButton } onPress={()=>{setpause(!pause);setFlag(pause ? 1 : 0)}}>
+      <TouchableOpacity
+        style={styles.pauseButton}
+        onPress={() => {
+          setpause(!pause);
+          setFlag(pause ? 1 : 0);
+        }}
+      >
         <Text style={styles.pauseText}>{pause ? "▶" : "II"}</Text>
       </TouchableOpacity>
 
       {enemies.map((enemy) => (
-        <Enemy key={enemy.id} position={{ x: enemy.x, y: enemy.y }} flag={flag}/>
+        <Enemy
+          key={enemy.id}
+          position={{ x: enemy.x, y: enemy.y }}
+          flag={flag}
+        />
       ))}
-      <Player position={position} size={{ width: 64, height: 64 }} flag={flag}/>
+      <Player
+        position={position}
+        size={{ width: 64, height: 64 }}
+        flag={flag}
+      />
       {bullets.map((b) => (
         <Bullet key={b.id} position={{ x: b.x, y: b.y }} />
       ))}
@@ -181,7 +246,13 @@ export default function App() {
             <Text style={styles.text}>↓</Text>
           </TouchableOpacity>
         </View>
-        <TouchableOpacity onPress={fireBullet} style={styles.fireButton}>
+        <TouchableOpacity
+          onPress={() => {
+            fireBullet();
+            playShootSound();
+          }}
+          style={styles.fireButton}
+        >
           <Text style={styles.fireText}>FIRE</Text>
         </TouchableOpacity>
       </View>
@@ -197,7 +268,7 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     alignItems: "center",
   },
-  row: { flexDirection:"row", marginVertical: 2 },
+  row: { flexDirection: "row", marginVertical: 2 },
   button: {
     backgroundColor: "#444",
     borderRadius: 8,
