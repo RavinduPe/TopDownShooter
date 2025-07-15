@@ -23,6 +23,8 @@ export default function App() {
   const [pause, setpause] = useState(null);
   const [flag, setFlag] = useState(1);
   const [showStartScreen, setShowStartScreen] = useState(true);
+  const [kills, setKills] = useState(0); // total enemies destroyed
+  const [bulletsNeeded, setBulletsNeeded] = useState(1); // bullets needed to spawn enemies
 
   const shootSound = useRef();
   const hitSound = useRef();
@@ -149,17 +151,18 @@ export default function App() {
         if (hitIndex === -1) {
           remainingBullets.push(bullet);
         } else {
-          remainingEnemies[hitIndex].health -= 50; // reduce health
+          remainingEnemies[hitIndex].health -= Math.floor(100 / bulletsNeeded); // reduce health
 
           if (remainingEnemies[hitIndex].health <= 0) {
             remainingEnemies.splice(hitIndex, 1); // remove enemy if dead
+            setKills(kills + 1); // track total kills
             playHitSound();
             hits++;
           }
         }
       });
 
-      if (hits > 0) setScore((prev) => prev + hits * 10);
+      if (hits > 0) setScore(score + hits * 10 * bulletsNeeded); // increase score based on hits
 
       setBullets(remainingBullets);
       setEnemies(remainingEnemies);
@@ -173,14 +176,15 @@ export default function App() {
 
     const spawnInterval = setInterval(() => {
       const x = Math.floor(Math.random() * (screenWidth - 50));
+      setBulletsNeeded(1 + Math.floor(kills / 10)); // +1 bullet every 10 kills
       setEnemies((prev) => [
         ...prev,
         { id: Date.now(), x, y: -50, health: 100 },
       ]);
-    }, 1500);
+    }, 500);
 
     return () => clearInterval(spawnInterval);
-  }, [gameOver, pause, showStartScreen]);
+  }, [gameOver, pause, showStartScreen,kills]);
 
   return (
     <View style={styles.container}>
