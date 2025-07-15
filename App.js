@@ -9,8 +9,7 @@ import {
 import Player from "./components/Player";
 import Bullet from "./components/Bullet";
 import Enemy from "./components/Enemy";
-import { Audio } from 'expo-av'; 
-
+import { Audio } from "expo-av";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -24,7 +23,6 @@ export default function App() {
   const [pause, setpause] = useState(null);
   const [flag, setFlag] = useState(1);
   const [showStartScreen, setShowStartScreen] = useState(true);
-
 
   const shootSound = useRef();
   const hitSound = useRef();
@@ -73,9 +71,6 @@ export default function App() {
     await gameOverSound.current?.replayAsync();
   };
 
-
-
-
   const restartGame = () => {
     setPosition({ x: 180, y: 550 });
     setBullets([]);
@@ -108,7 +103,6 @@ export default function App() {
     }
   };
 
-
   const fireBullet = () => {
     if (gameOver || pause || showStartScreen) return;
 
@@ -124,9 +118,7 @@ export default function App() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-
       if (gameOver || pause || showStartScreen) return;
-
 
       const movedBullets = bullets
         .map((b) => ({ ...b, y: b.y - 10 }))
@@ -157,9 +149,13 @@ export default function App() {
         if (hitIndex === -1) {
           remainingBullets.push(bullet);
         } else {
-          remainingEnemies.splice(hitIndex, 1);
-          playHitSound();
-          hits++;
+          remainingEnemies[hitIndex].health -= 50; // reduce health
+
+          if (remainingEnemies[hitIndex].health <= 0) {
+            remainingEnemies.splice(hitIndex, 1); // remove enemy if dead
+            playHitSound();
+            hits++;
+          }
         }
       });
 
@@ -177,11 +173,13 @@ export default function App() {
 
     const spawnInterval = setInterval(() => {
       const x = Math.floor(Math.random() * (screenWidth - 50));
-      setEnemies((prev) => [...prev, { id: Date.now(), x, y: -50 }]);
-    }, 2000);
+      setEnemies((prev) => [
+        ...prev,
+        { id: Date.now(), x, y: -50, health: 100 },
+      ]);
+    }, 1500);
 
     return () => clearInterval(spawnInterval);
-
   }, [gameOver, pause, showStartScreen]);
 
   return (
@@ -216,6 +214,7 @@ export default function App() {
               key={enemy.id}
               position={{ x: enemy.x, y: enemy.y }}
               flag={flag}
+              health={enemy.health}
             />
           ))}
           <Player
@@ -274,7 +273,13 @@ export default function App() {
                 <Text style={styles.text}>↓</Text>
               </TouchableOpacity>
             </View>
-            <TouchableOpacity onPress={()=>{fireBullet();playShootSound();}} style={styles.fireButton}>
+            <TouchableOpacity
+              onPress={() => {
+                fireBullet();
+                playShootSound();
+              }}
+              style={styles.fireButton}
+            >
               <Text style={styles.fireText}>FIRE</Text>
             </TouchableOpacity>
           </View>
