@@ -25,6 +25,9 @@ export default function App() {
   const [showStartScreen, setShowStartScreen] = useState(true);
   const [kills, setKills] = useState(0); // total enemies destroyed
   const [bulletsNeeded, setBulletsNeeded] = useState(1); // bullets needed to spawn enemies
+  const BASE_SPAWN   = 500;   
+  const MIN_SPAWN    = 1800; 
+  const spawnDelay    = Math.max(MIN_SPAWN, BASE_SPAWN / bulletsNeeded);
 
   const shootSound = useRef();
   const hitSound = useRef();
@@ -117,6 +120,46 @@ export default function App() {
   const isColliding = (a, b) => {
     return a.x < b.x + 50 && a.x + 6 > b.x && a.y < b.y + 50 && a.y + 12 > b.y;
   };
+  const isCollidingPlayer = (a, b) => {
+  return (
+    a.x < b.x + b.width &&
+    a.x + a.width > b.x &&
+    a.y < b.y + b.height &&
+    a.y + a.height > b.y
+  );
+};
+
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (gameOver || pause) return;
+
+
+      // Check if any enemy hits the player
+      const playerBox = {
+        x: position.x,
+        y: position.y,
+        width: 64,
+        height: 64,
+      };
+
+      enemies.forEach((enemy) => {
+        const enemyBox = {
+          x: enemy.x,
+          y: enemy.y,
+          width: 50,
+          height: 50,
+        };
+
+        if (isCollidingPlayer(playerBox, enemyBox)) {
+          setGameOver(true);
+          playGameOverSound();
+        }
+      });
+    }, 30);
+
+    return () => clearInterval(interval);
+  }, [bullets, enemies, gameOver]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -155,7 +198,7 @@ export default function App() {
 
           if (remainingEnemies[hitIndex].health <= 0) {
             remainingEnemies.splice(hitIndex, 1); // remove enemy if dead
-            setKills(kills + 1); // track total kills
+            setKills((prev)=>prev+1); // track total kills
             playHitSound();
             hits++;
           }
@@ -181,10 +224,10 @@ export default function App() {
         ...prev,
         { id: Date.now(), x, y: -50, health: 100 },
       ]);
-    }, 500);
+    }, spawnDelay);
 
     return () => clearInterval(spawnInterval);
-  }, [gameOver, pause, showStartScreen,kills]);
+  }, [gameOver, pause, showStartScreen, kills]);
 
   return (
     <View style={styles.container}>
