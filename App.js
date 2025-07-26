@@ -83,6 +83,7 @@ export default function App() {
     setScore(0);
     setGameOver(false);
     setShowStartScreen(true);
+    setKills(0)
   };
 
   const movePlayer = (dx, dy) => {

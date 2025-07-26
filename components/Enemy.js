@@ -4,14 +4,14 @@ import { Image, StyleSheet, View } from "react-native";
 const frameCount = 9; //  how many frames you have
 const frameInterval = 100; // milliseconds
 
-export default function Enemy({ position, flag,health }) {
+export default function Enemy({ position, flag, health }) {
   const [frameIndex, setFrameIndex] = useState(0);
   useEffect(() => {
     const interval = setInterval(() => {
       setFrameIndex((prev) => (prev + 1) % frameCount);
     }, frameInterval);
     return () => clearInterval(interval);
-  }, []);
+  }, [flag]);
 
   const frameImages = [
     require("../assets/images/tds_zombie/skeleton-move_0.png"),
@@ -36,9 +36,16 @@ export default function Enemy({ position, flag,health }) {
   if (flag === 0) {
     return (
       <View
-        source={frameImages[0]}
-        style={[styles.enemy, { left: position.x, top: position.y }]}
+        style={[
+          styles.healthBarContainer,
+          { left: position.x, top: position.y },
+        ]}
       >
+        <View style={styles.healthBarBackground}>
+          {/* Health Bar Fill */}
+          <View style={[styles.healthBarFill, { width: `${health}%` }]} />
+        </View>
+        <Image source={frameImages[0]} style={styles.enemy} />
         {/* Health Bar */}
         <View style={styles.healthBarContainer}></View>
       </View>
@@ -68,25 +75,24 @@ export default function Enemy({ position, flag,health }) {
 
 const styles = StyleSheet.create({
   healthBarContainer: {
-    position: 'absolute',
-    alignItems: 'center',
+    position: "absolute",
+    alignItems: "center",
   },
   healthBarBackground: {
     width: 50,
     height: 6,
-    backgroundColor: '#ccc',
+    backgroundColor: "#ccc",
     borderRadius: 3,
     marginBottom: 2,
   },
   healthBarFill: {
     height: 6,
-    backgroundColor: 'red',
+    backgroundColor: "red",
     borderRadius: 3,
   },
   enemy: {
     width: 50,
     height: 50,
-    resizeMode: 'contain',
+    resizeMode: "contain",
   },
 });
-
