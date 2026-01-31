@@ -25,9 +25,18 @@ export default function App() {
   const [showStartScreen, setShowStartScreen] = useState(true);
   const [kills, setKills] = useState(0); // total enemies destroyed
   const [bulletsNeeded, setBulletsNeeded] = useState(1); // bullets needed to spawn enemies
-  const BASE_SPAWN   = 500;   
-  const MIN_SPAWN    = 1800; 
-  const spawnDelay    = Math.max(MIN_SPAWN, BASE_SPAWN / bulletsNeeded);
+  const SPAWN_INTERVAL = 1000; // 1.5 seconds per enemy
+  const BASE_SPEED = 2;       // initial enemy speed
+  const SPEED_INCREASE = 0.3; // increase per 10 kills
+  const doubleSpawnChance = 0.1;
+
+  //const spawnDelay    = Math.max(MIN_SPAWN, BASE_SPAWN / bulletsNeeded);
+  const LANES = 5; // number of horizontal lanes
+  const laneWidth = screenWidth / LANES;
+
+  const getLaneX = (lane) => lane * laneWidth + laneWidth / 2 - 32; // 32 = half player width
+
+
 
   const shootSound = useRef();
   const hitSound = useRef();
@@ -171,13 +180,17 @@ export default function App() {
         .filter((b) => b.y > -20);
 
       const movedEnemies = enemies.map((e) => {
-        const newY = e.y + 5;
-        if (newY >= position.y) {
-          playGameOverSound();
-          setGameOver(true);
-        }
-        return { ...e, y: newY };
-      });
+      //const speed = BASE_SPEED + Math.floor(kills / 15) * SPEED_INCREASE;
+      const newY = e.y + 4;
+
+      if (newY > position.y) { // enemy passed player
+        playGameOverSound();
+        setGameOver(true);
+      }
+
+      return { ...e, y: newY };
+    });
+
 
       const visibleEnemies = movedEnemies.filter((e) => e.y < 700);
 
@@ -215,20 +228,36 @@ export default function App() {
     return () => clearInterval(interval);
   }, [bullets, enemies, gameOver]);
 
-  useEffect(() => {
-    if (gameOver || pause || showStartScreen) return;
+useEffect(() => {
+  if (gameOver || pause || showStartScreen) return;
 
-    const spawnInterval = setInterval(() => {
-      const x = Math.floor(Math.random() * (screenWidth - 50));
-      setBulletsNeeded(1 + Math.floor(kills / 10)); // +1 bullet every 10 kills
+  const spawnInterval = setInterval(() => {
+    const lane = Math.floor(Math.random() * LANES);
+    const x = getLaneX(lane);
+
+    setBulletsNeeded(1 + Math.floor(kills / 10));
+
+    // Always spawn one enemy
+    setEnemies((prev) => [
+      ...prev,
+      { id: Date.now(), x, y: -50, health: 100, lane },
+    ]);
+
+    // Occasionally spawn a second enemy in the same lane
+    if (Math.random() < doubleSpawnChance) {
       setEnemies((prev) => [
         ...prev,
-        { id: Date.now(), x, y: -50, health: 100 },
+        { id: Date.now() + 1, x, y: -100, health: 100, lane },
       ]);
-    }, spawnDelay);
+    }
+  }, SPAWN_INTERVAL);
 
-    return () => clearInterval(spawnInterval);
-  }, [gameOver, pause, showStartScreen, kills]);
+  return () => clearInterval(spawnInterval);
+}, [gameOver, pause, showStartScreen, kills]);
+
+
+
+
 
   return (
     <View style={styles.container}>
@@ -323,28 +352,27 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#111", // Slightly lighter black for better contrast
+    backgroundColor: "#111", 
   },
 
-  // --- GAME CONTROLS (Improved Layout) ---
   controls: {
     position: "absolute",
     bottom: 40,
     width: "100%",
     alignItems: "center",
     justifyContent: "center",
-    gap: 20, // Adds space between arrows and fire button
+    gap: 20, 
   },
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
-    width: 220, // Slightly wider for thumb comfort
+    width: 220,
   },
   button: {
     width: 80,
     height: 80,
     backgroundColor: "#333",
-    borderRadius: 40, // Circle shape
+    borderRadius: 40, 
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 2,
@@ -352,13 +380,12 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   text: {
-    color: "#fff", // Fixed typo (was 'olor')
+    color: "#fff",
     fontSize: 32,
     fontWeight: "bold",
-    paddingBottom: 4, // Visual centering adjustment
+    paddingBottom: 4,
   },
   fireButton: {
-    // Removed absolute positioning hacks
     width: 220,
     height: 70,
     backgroundColor: "#e63946",
@@ -366,7 +393,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     elevation: 8,
-    borderBottomWidth: 6, // 3D Button effect
+    borderBottomWidth: 6,
     borderBottomColor: "#b02a35",
   },
   fireText: {
@@ -376,7 +403,7 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
   },
 
-  // --- HUD & SCREENS ---
+
   score: {
     color: "#fff",
     fontSize: 28,
@@ -442,18 +469,18 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 
-  // --- GAME OVER ---
+
   gameOverOverlay: {
     position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "rgba(180, 0, 0, 0.3)", // Red tint overlay
+    backgroundColor: "rgba(180, 0, 0, 0.3)",
     justifyContent: "center",
     alignItems: "center",
     zIndex: 10,
-    backdropFilter: "blur(10px)", // Works on some versions
+    backdropFilter: "blur(10px)",
   },
   gameOverText: {
     color: "#fff",
