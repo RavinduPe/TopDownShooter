@@ -90,7 +90,7 @@ export default function App() {
     if (gameOver || pause || showStartScreen) return;
     setPosition((prev) => ({
       x: Math.min(Math.max(prev.x + dx, 0), screenWidth - 64),
-      y: Math.min(Math.max(prev.y + dy, 0), 700),
+      y: prev.y ,
     }));
   };
 
@@ -172,7 +172,7 @@ export default function App() {
 
       const movedEnemies = enemies.map((e) => {
         const newY = e.y + 5;
-        if (newY >= 700) {
+        if (newY >= position.y) {
           playGameOverSound();
           setGameOver(true);
         }
@@ -287,40 +287,24 @@ export default function App() {
           )}
 
           <View style={styles.controls}>
+
             <View style={styles.row}>
               <TouchableOpacity
-                onPressIn={() => startMoving(0, -10)}
-                onPressOut={stopMoving}
-                style={styles.button}
-              >
-                <Text style={styles.text}>↑</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.row}>
-              <TouchableOpacity
-                onPressIn={() => startMoving(-10, 0)}
+                onPressIn={() => startMoving(-9)}
                 onPressOut={stopMoving}
                 style={styles.button}
               >
                 <Text style={styles.text}>←</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                onPressIn={() => startMoving(10, 0)}
+                onPressIn={() => startMoving(9)}
                 onPressOut={stopMoving}
                 style={styles.button}
               >
                 <Text style={styles.text}>→</Text>
               </TouchableOpacity>
             </View>
-            <View style={styles.row}>
-              <TouchableOpacity
-                onPressIn={() => startMoving(0, 10)}
-                onPressOut={stopMoving}
-                style={styles.button}
-              >
-                <Text style={styles.text}>↓</Text>
-              </TouchableOpacity>
-            </View>
+
             <TouchableOpacity
               onPress={() => {
                 fireBullet();
