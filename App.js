@@ -14,7 +14,7 @@ import { Audio } from "expo-av";
 const screenWidth = Dimensions.get("window").width;
 
 export default function App() {
-  const [position, setPosition] = useState({ x: 180, y: 550 });
+  const [position, setPosition] = useState({ x: 180, y: 580 });
   const [bullets, setBullets] = useState([]);
   const [enemies, setEnemies] = useState([]);
   const [score, setScore] = useState(0);
@@ -304,7 +304,6 @@ export default function App() {
                 <Text style={styles.text}>→</Text>
               </TouchableOpacity>
             </View>
-
             <TouchableOpacity
               onPress={() => {
                 fireBullet();
@@ -322,125 +321,158 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#000" },
+  container: {
+    flex: 1,
+    backgroundColor: "#111", // Slightly lighter black for better contrast
+  },
+
+  // --- GAME CONTROLS (Improved Layout) ---
   controls: {
     position: "absolute",
-    bottom: 20,
-    alignSelf: "center",
+    bottom: 40,
+    width: "100%",
     alignItems: "center",
+    justifyContent: "center",
+    gap: 20, // Adds space between arrows and fire button
   },
-  row: { flexDirection: "row", marginVertical: 2 },
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: 220, // Slightly wider for thumb comfort
+  },
   button: {
-    backgroundColor: "#444",
-    borderRadius: 8,
-    padding: 15,
-    marginHorizontal: 50,
+    width: 80,
+    height: 80,
+    backgroundColor: "#333",
+    borderRadius: 40, // Circle shape
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "#555",
+    elevation: 5,
   },
-  text: { color: "#fff", fontSize: 24 },
+  text: {
+    color: "#fff", // Fixed typo (was 'olor')
+    fontSize: 32,
+    fontWeight: "bold",
+    paddingBottom: 4, // Visual centering adjustment
+  },
   fireButton: {
-    position: "absolute",
-    bottom: 78,
-    left: "60.5%",
-    transform: [{ translateX: -75 }],
-    marginTop: 15,
+    // Removed absolute positioning hacks
+    width: 220,
+    height: 70,
     backgroundColor: "#e63946",
-    paddingVertical: 12,
-    paddingHorizontal: 25,
-    borderRadius: 10,
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 8,
+    borderBottomWidth: 6, // 3D Button effect
+    borderBottomColor: "#b02a35",
   },
   fireText: {
     color: "#fff",
-    fontSize: 18,
-    fontWeight: "bold",
+    fontSize: 24,
+    fontWeight: "900",
+    letterSpacing: 2,
   },
+
+  // --- HUD & SCREENS ---
   score: {
     color: "#fff",
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: "bold",
     position: "absolute",
-    top: 50,
+    top: 60,
     left: 20,
+    textShadowColor: "rgba(0, 0, 0, 0.75)",
+    textShadowOffset: { width: -1, height: 1 },
+    textShadowRadius: 10,
   },
+  pauseButton: {
+    position: "absolute",
+    top: 60,
+    right: 20,
+    width: 44,
+    height: 44,
+    backgroundColor: "#333",
+    borderRadius: 22,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#555",
+  },
+  pauseText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+
+ startScreen: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "rgba(0,0,0,0.9)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 20,
+  },
+  startTitle: {
+    fontSize: 35,
+    fontWeight: "bold",
+    color: "#4cc9f0",
+    marginBottom: 50,
+    textTransform: "uppercase",
+    letterSpacing: 2,
+  },
+  startButton: {
+    backgroundColor: "#4cc9f0",
+    paddingVertical: 18,
+    paddingHorizontal: 50,
+    borderRadius: 30,
+    elevation: 10,
+    shadowColor: "#4cc9f0",
+    shadowOpacity: 0.5,
+    shadowRadius: 15,
+  },
+  startButtonText: {
+    fontSize: 22,
+    color: "#000",
+    fontWeight: "bold",
+  },
+
+  // --- GAME OVER ---
   gameOverOverlay: {
     position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.8)",
+    backgroundColor: "rgba(180, 0, 0, 0.3)", // Red tint overlay
     justifyContent: "center",
     alignItems: "center",
     zIndex: 10,
+    backdropFilter: "blur(10px)", // Works on some versions
   },
   gameOverText: {
-    color: "white",
-    fontSize: 40,
+    color: "#fff",
+    fontSize: 48,
     fontWeight: "bold",
+    marginBottom: 20,
+    textShadowColor: "red",
+    textShadowRadius: 10,
   },
   restartButton: {
     marginTop: 20,
-    backgroundColor: "#06d6a0",
-    paddingVertical: 10,
-    paddingHorizontal: 30,
-    borderRadius: 10,
+    backgroundColor: "#fff",
+    paddingVertical: 15,
+    paddingHorizontal: 40,
+    borderRadius: 25,
   },
   restartText: {
     color: "#000",
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-
-  pauseButton: {
-    position: "absolute",
-    top: 50,
-    right: 20,
-    backgroundColor: "#444",
-    padding: 10,
-    borderRadius: 8,
-  },
-  pauseText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  startScreen: {
-    position: "absolute",
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: "#000",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 10,
-  },
-  startTitle: {
-    fontSize: 36,
-    fontWeight: "bold",
-    color: "#fff",
-    marginBottom: 40,
-  },
-  startButton: {
-    backgroundColor: "#1abc9c",
-    paddingVertical: 15,
-    paddingHorizontal: 40,
-    borderRadius: 10,
-  },
-  startButtonText: {
     fontSize: 20,
-    color: "#fff",
     fontWeight: "bold",
-  },
-  pauseButton: {
-    position: "absolute",
-    top: 50,
-    right: 20,
-    backgroundColor: "#555",
-    padding: 10,
-    borderRadius: 10,
-  },
-  pauseText: {
-    color: "#fff",
-    fontSize: 16,
   },
 });
