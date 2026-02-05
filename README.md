@@ -31,14 +31,14 @@ This project demonstrates game-loop logic, state management, and clean gameplay 
 .
 ├── App.js
 ├── components/
-│   ├── Player.js
-│   ├── Enemy.js
-│   └── Bullet.js
+│ ├── Player.js
+│ ├── Enemy.js
+│ └── Bullet.js
 ├── assets/
-│   └── sounds/
-│       ├── shoot-sound.wav
-│       ├── hit-sound.wav
-│       └── game-over.wav
+│ └── sounds/
+│ ├── shoot-sound.wav
+│ ├── hit-sound.wav
+│ └── game-over.wav
 └── README.md
 
 ## ▶️ Getting Started
