@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   Text,
   Dimensions,
+  ImageBackground,
 } from "react-native";
 import Player from "./components/Player";
 import Bullet from "./components/Bullet";
@@ -25,8 +26,6 @@ export default function App() {
   const [showStartScreen, setShowStartScreen] = useState(true);
   const [kills, setKills] = useState(0); // total enemies destroyed
   const [bulletsNeeded, setBulletsNeeded] = useState(1); // bullets needed to spawn enemies
-  const SPAWN_INTERVAL = 800; // 1.5 seconds per enemy
-  const doubleSpawnChance = 0.125;
   const MIN_ENEMIES = 3;
 
   const LANES = 6; // number of horizontal lanes
@@ -184,7 +183,7 @@ export default function App() {
     }, 30);
 
     return () => clearInterval(interval);
-  }, [bullets, enemies, gameOver]);
+  }, [bullets, enemies, gameOver,pause ]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -243,7 +242,7 @@ export default function App() {
     }, 30);
 
     return () => clearInterval(interval);
-  }, [bullets, enemies, gameOver]);
+  }, [bullets, enemies, gameOver,pause]);
 
   useEffect(() => {
     if (gameOver || pause || showStartScreen) return;
@@ -257,88 +256,103 @@ export default function App() {
   return (
     <View style={styles.container}>
       {showStartScreen && (
-        <View style={styles.startScreen}>
-          <Text style={styles.startTitle}>Top Down Shooter</Text>
-          <TouchableOpacity
-            style={styles.startButton}
-            onPress={() => setShowStartScreen(false)}
-          >
-            <Text style={styles.startButtonText}>START GAME</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-
-      {!showStartScreen && (
-        <>
-          <Text style={styles.score}>Score: {score}</Text>
-          <TouchableOpacity
-            style={styles.pauseButton}
-            onPress={() => {
-              setpause(!pause);
-              setFlag(pause ? 1 : 0);
-            }}
-          >
-            <Text style={styles.pauseText}>{pause ? "▶" : "II"}</Text>
-          </TouchableOpacity>
-
-          {enemies.map((enemy) => (
-            <Enemy
-              key={enemy.id}
-              position={{ x: enemy.x, y: enemy.y }}
-              flag={flag}
-              health={enemy.health}
-            />
-          ))}
-          <Player
-            position={position}
-            size={{ width: 64, height: 64 }}
-            flag={flag}
-          />
-          {bullets.map((b) => (
-            <Bullet key={b.id} position={{ x: b.x, y: b.y }} />
-          ))}
-
-          {gameOver && (
-            <View style={styles.gameOverOverlay}>
-              <Text style={styles.gameOverText}>Game Over</Text>
-              <TouchableOpacity
-                style={styles.restartButton}
-                onPress={restartGame}
-              >
-                <Text style={styles.restartText}>Restart</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-
-          <View style={styles.controls}>
-            <View style={styles.row}>
-              <TouchableOpacity
-                onPressIn={() => startMoving(-9)}
-                onPressOut={stopMoving}
-                style={styles.button}
-              >
-                <Text style={styles.text}>←</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPressIn={() => startMoving(9)}
-                onPressOut={stopMoving}
-                style={styles.button}
-              >
-                <Text style={styles.text}>→</Text>
-              </TouchableOpacity>
-            </View>
+        <ImageBackground
+          source={require("./assets/images/start-screen.png")}
+          style={styles.startScreen}
+          resizeMode="cover"
+        >
+          <View style={styles.startOverlay}>
+            <Text style={styles.startTitle}>Top Down Shooter</Text>
             <TouchableOpacity
-              onPress={() => {
-                fireBullet();
-                playShootSound();
-              }}
-              style={styles.fireButton}
+              style={styles.startButton}
+              onPress={() => setShowStartScreen(false)}
             >
-              <Text style={styles.fireText}>FIRE</Text>
+              <Text style={styles.startButtonText}>START GAME</Text>
             </TouchableOpacity>
           </View>
-        </>
+        </ImageBackground>
       )}
+
+
+    {!showStartScreen && (
+      <ImageBackground
+        source={require("./assets/images/game-background.png")}
+        style={styles.gameBackground}
+        resizeMode="cover"
+      >
+        <Text style={styles.score}>Score: {score}</Text>
+        <TouchableOpacity
+          style={styles.pauseButton}
+          onPress={() => {
+            setpause(!pause);
+            setFlag(pause ? 1 : 0);
+          }}
+        >
+          <Text style={styles.pauseText}>{pause ? "▶" : "II"}</Text>
+        </TouchableOpacity>
+
+        {enemies.map((enemy) => (
+          <Enemy
+            key={enemy.id}
+            position={{ x: enemy.x, y: enemy.y }}
+            flag={flag}
+            health={enemy.health}
+          />
+        ))}
+
+        <Player
+          position={position}
+          size={{ width: 64, height: 64 }}
+          flag={flag}
+        />
+
+        {bullets.map((b) => (
+          <Bullet key={b.id} position={{ x: b.x, y: b.y }} />
+        ))}
+
+        {gameOver && (
+          <View style={styles.gameOverOverlay}>
+            <Text style={styles.gameOverText}>Game Over</Text>
+            <TouchableOpacity
+              style={styles.restartButton}
+              onPress={restartGame}
+            >
+              <Text style={styles.restartText}>Restart</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Controls */}
+        <View style={styles.controls}>
+          <View style={styles.row}>
+            <TouchableOpacity
+              onPressIn={() => startMoving(-9)}
+              onPressOut={stopMoving}
+              style={styles.button}
+            >
+              <Text style={styles.text}>←</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPressIn={() => startMoving(9)}
+              onPressOut={stopMoving}
+              style={styles.button}
+            >
+              <Text style={styles.text}>→</Text>
+            </TouchableOpacity>
+          </View>
+          <TouchableOpacity
+            onPress={() => {
+              fireBullet();
+              playShootSound();
+            }}
+            style={styles.fireButton}
+          >
+            <Text style={styles.fireText}>FIRE</Text>
+          </TouchableOpacity>
+        </View>
+      </ImageBackground>
+    )}
+
     </View>
   );
 }
@@ -493,5 +507,22 @@ const styles = StyleSheet.create({
     color: "#000",
     fontSize: 20,
     fontWeight: "bold",
-  },
+  },startScreen: {
+  flex: 1,
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+startOverlay: {
+  flex: 1,
+  width: "100%",
+  backgroundColor: "rgba(0,0,0,0.5)",
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+gameBackground: {
+  flex: 1,
+},
+
 });
