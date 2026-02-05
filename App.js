@@ -25,18 +25,14 @@ export default function App() {
   const [showStartScreen, setShowStartScreen] = useState(true);
   const [kills, setKills] = useState(0); // total enemies destroyed
   const [bulletsNeeded, setBulletsNeeded] = useState(1); // bullets needed to spawn enemies
-  const SPAWN_INTERVAL = 1000; // 1.5 seconds per enemy
-  const BASE_SPEED = 2;       // initial enemy speed
-  const SPEED_INCREASE = 0.3; // increase per 10 kills
-  const doubleSpawnChance = 0.1;
+  const SPAWN_INTERVAL = 800; // 1.5 seconds per enemy
+  const doubleSpawnChance = 0.125;
+  const MIN_ENEMIES = 3;
 
-  //const spawnDelay    = Math.max(MIN_SPAWN, BASE_SPAWN / bulletsNeeded);
-  const LANES = 5; // number of horizontal lanes
+  const LANES = 6; // number of horizontal lanes
   const laneWidth = screenWidth / LANES;
 
   const getLaneX = (lane) => lane * laneWidth + laneWidth / 2 - 32; // 32 = half player width
-
-
 
   const shootSound = useRef();
   const hitSound = useRef();
@@ -45,17 +41,17 @@ export default function App() {
   useEffect(() => {
     const loadSounds = async () => {
       const shoot = await Audio.Sound.createAsync(
-        require("./assets/sounds/shoot-sound.wav")
+        require("./assets/sounds/shoot-sound.wav"),
       );
       shootSound.current = shoot.sound;
 
       const hit = await Audio.Sound.createAsync(
-        require("./assets/sounds/hit-sound.wav")
+        require("./assets/sounds/hit-sound.wav"),
       );
       hitSound.current = hit.sound;
 
       const gameOverS = await Audio.Sound.createAsync(
-        require("./assets/sounds/game-over.wav")
+        require("./assets/sounds/game-over.wav"),
       );
       gameOverSound.current = gameOverS.sound;
     };
@@ -68,6 +64,27 @@ export default function App() {
       gameOverSound.current?.unloadAsync();
     };
   }, []);
+
+    
+  const spawnEnemy = (count = 1) => {
+    setEnemies((prev) => {
+      let list = [...prev];
+      setBulletsNeeded(1 + Math.floor(kills / 10)); // increase bullets needed every 10 kills
+
+      for (let i = 0; i < count; i++) {
+        const lane = Math.floor(Math.random() * LANES);
+        list.push({
+          id: Date.now() + Math.random(),
+          x: getLaneX(lane),
+          y: -60 * (i + 1),
+          health: 100,
+          lane,
+        });
+      }
+
+      return list;
+    });
+  };
 
   const playShootSound = async () => {
     try {
@@ -92,14 +109,14 @@ export default function App() {
     setScore(0);
     setGameOver(false);
     setShowStartScreen(true);
-    setKills(0)
+    setKills(0);
   };
 
   const movePlayer = (dx, dy) => {
     if (gameOver || pause || showStartScreen) return;
     setPosition((prev) => ({
       x: Math.min(Math.max(prev.x + dx, 0), screenWidth - 64),
-      y: prev.y ,
+      y: prev.y,
     }));
   };
 
@@ -107,7 +124,7 @@ export default function App() {
     if (moveInterval) return;
     const interval = setInterval(() => {
       movePlayer(dx, dy);
-    }, 50);
+    }, 40);
     setMoveInterval(interval);
   };
 
@@ -131,19 +148,17 @@ export default function App() {
     return a.x < b.x + 50 && a.x + 6 > b.x && a.y < b.y + 50 && a.y + 12 > b.y;
   };
   const isCollidingPlayer = (a, b) => {
-  return (
-    a.x < b.x + b.width &&
-    a.x + a.width > b.x &&
-    a.y < b.y + b.height &&
-    a.y + a.height > b.y
-  );
-};
-
+    return (
+      a.x < b.x + b.width &&
+      a.x + a.width > b.x &&
+      a.y < b.y + b.height &&
+      a.y + a.height > b.y
+    );
+  };
 
   useEffect(() => {
     const interval = setInterval(() => {
       if (gameOver || pause) return;
-
 
       // Check if any enemy hits the player
       const playerBox = {
@@ -180,17 +195,16 @@ export default function App() {
         .filter((b) => b.y > -20);
 
       const movedEnemies = enemies.map((e) => {
-      //const speed = BASE_SPEED + Math.floor(kills / 15) * SPEED_INCREASE;
-      const newY = e.y + 4;
+        const newY = e.y + 4;
 
-      if (newY > position.y) { // enemy passed player
-        playGameOverSound();
-        setGameOver(true);
-      }
+        if (newY > position.y) {
+          // enemy passed player
+          playGameOverSound();
+          setGameOver(true);
+        }
 
-      return { ...e, y: newY };
-    });
-
+        return { ...e, y: newY };
+      });
 
       const visibleEnemies = movedEnemies.filter((e) => e.y < 700);
 
@@ -202,8 +216,8 @@ export default function App() {
         const hitIndex = remainingEnemies.findIndex((enemy) =>
           isColliding(
             { x: bullet.x, y: bullet.y, width: 6, height: 12 },
-            { x: enemy.x, y: enemy.y, width: 50, height: 50 }
-          )
+            { x: enemy.x, y: enemy.y, width: 50, height: 50 },
+          ),
         );
         if (hitIndex === -1) {
           remainingBullets.push(bullet);
@@ -211,11 +225,14 @@ export default function App() {
           remainingEnemies[hitIndex].health -= Math.floor(100 / bulletsNeeded); // reduce health
 
           if (remainingEnemies[hitIndex].health <= 0) {
-            remainingEnemies.splice(hitIndex, 1); // remove enemy if dead
-            setKills((prev)=>prev+1); // track total kills
+            remainingEnemies.splice(hitIndex, 1);
+            setKills(prev => prev + 1);
             playHitSound();
             hits++;
+
+            spawnEnemy(1); // replace immediately
           }
+
         }
       });
 
@@ -228,35 +245,13 @@ export default function App() {
     return () => clearInterval(interval);
   }, [bullets, enemies, gameOver]);
 
-useEffect(() => {
-  if (gameOver || pause || showStartScreen) return;
+  useEffect(() => {
+    if (gameOver || pause || showStartScreen) return;
 
-  const spawnInterval = setInterval(() => {
-    const lane = Math.floor(Math.random() * LANES);
-    const x = getLaneX(lane);
-
-    setBulletsNeeded(1 + Math.floor(kills / 10));
-
-    // Always spawn one enemy
-    setEnemies((prev) => [
-      ...prev,
-      { id: Date.now(), x, y: -50, health: 100, lane },
-    ]);
-
-    // Occasionally spawn a second enemy in the same lane
-    if (Math.random() < doubleSpawnChance) {
-      setEnemies((prev) => [
-        ...prev,
-        { id: Date.now() + 1, x, y: -100, health: 100, lane },
-      ]);
+    if (enemies.length < MIN_ENEMIES) {
+      spawnEnemy(MIN_ENEMIES - enemies.length);
     }
-  }, SPAWN_INTERVAL);
-
-  return () => clearInterval(spawnInterval);
-}, [gameOver, pause, showStartScreen, kills]);
-
-
-
+  }, [enemies, gameOver, pause, showStartScreen]);
 
 
   return (
@@ -316,7 +311,6 @@ useEffect(() => {
           )}
 
           <View style={styles.controls}>
-
             <View style={styles.row}>
               <TouchableOpacity
                 onPressIn={() => startMoving(-9)}
@@ -352,7 +346,7 @@ useEffect(() => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#111", 
+    backgroundColor: "#111",
   },
 
   controls: {
@@ -361,7 +355,7 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
     justifyContent: "center",
-    gap: 20, 
+    gap: 20,
   },
   row: {
     flexDirection: "row",
@@ -372,7 +366,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     backgroundColor: "#333",
-    borderRadius: 40, 
+    borderRadius: 40,
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 2,
@@ -402,7 +396,6 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     letterSpacing: 2,
   },
-
 
   score: {
     color: "#fff",
@@ -434,7 +427,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 
- startScreen: {
+  startScreen: {
     position: "absolute",
     top: 0,
     bottom: 0,
@@ -468,7 +461,6 @@ const styles = StyleSheet.create({
     color: "#000",
     fontWeight: "bold",
   },
-
 
   gameOverOverlay: {
     position: "absolute",
